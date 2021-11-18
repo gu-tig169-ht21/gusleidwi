@@ -26,25 +26,19 @@ class TodoItem extends StatelessWidget {
     );
   }
 
-  bool _checked = false;
-
   @override
   Widget build(BuildContext context) {
     return Card(
         child: CheckboxListTile(
       title: Text(todo.name, style: _getTextStyle(todo.checked)),
-      value: _checked,
+      value: todo.checked,
+      secondary: IconButton(icon: Icon(Icons.remove_circle), onPressed: () {}),
       onChanged: (newValue) {
         onTodoChanged(todo);
-        setState(() {
-          _checked = newValue!;
-        });
       },
-      controlAffinity: ListTileControlAffinity.trailing,
+      controlAffinity: ListTileControlAffinity.leading,
     ));
   }
-
-  void setState(Null Function() param0) {}
 }
 
 class TodoList extends StatefulWidget {
@@ -64,7 +58,7 @@ class _TodoListState extends State<TodoList> {
         backgroundColor: Colors.orange,
       ),
       body: ListView(
-        padding: EdgeInsets.symmetric(vertical: 8.0),
+        padding: EdgeInsets.symmetric(vertical: 6.0),
         children: _todos.map((Todo todo) {
           return TodoItem(
             todo: todo,
@@ -91,6 +85,12 @@ class _TodoListState extends State<TodoList> {
       _todos.add(Todo(name: name, checked: false));
     });
     _textFieldController.clear();
+  }
+
+  void _removeTodoItem(String name) {
+    setState(() {
+      _todos.remove(Todo(name: name, checked: false));
+    });
   }
 
   Future<void> _displayDialog() async {
