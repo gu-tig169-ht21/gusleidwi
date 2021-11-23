@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:my_first_app/todo_provider.dart';
 
 void main() => runApp(TodoApp());
 
@@ -20,7 +22,7 @@ class TodoItem extends StatelessWidget {
   TextStyle? _getTextStyle(bool checked) {
     if (!checked) return null;
 
-    return TextStyle(
+    return const TextStyle(
       color: Colors.black45,
       decoration: TextDecoration.lineThrough,
     );
@@ -32,7 +34,8 @@ class TodoItem extends StatelessWidget {
         child: CheckboxListTile(
       title: Text(todo.name, style: _getTextStyle(todo.checked)),
       value: todo.checked,
-      secondary: IconButton(icon: Icon(Icons.remove_circle), onPressed: () {}),
+      secondary:
+          IconButton(icon: const Icon(Icons.remove_circle), onPressed: () {}),
       onChanged: (newValue) {
         onTodoChanged(todo);
       },
@@ -42,6 +45,8 @@ class TodoItem extends StatelessWidget {
 }
 
 class TodoList extends StatefulWidget {
+  const TodoList({Key? key}) : super(key: key);
+
   @override
   _TodoListState createState() => _TodoListState();
 }
@@ -54,11 +59,26 @@ class _TodoListState extends State<TodoList> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('TIG169 TODO:'),
+        title: const Text('Todo List:'),
         backgroundColor: Colors.orange,
+        actions: <Widget>[
+          PopupMenuButton<String>(
+            onSelected: (value) {
+              setState(() {
+                Provider.of<TodoProvider>(context, listen: false)
+                    .setFilterBy(value);
+              });
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(child: Text('Visa alla'), value: 'alla'),
+              const PopupMenuItem(child: Text('Visa ej klara'), value: 'inte'),
+              const PopupMenuItem(child: Text('Visa klara'), value: 'klar')
+            ],
+          )
+        ],
       ),
       body: ListView(
-        padding: EdgeInsets.symmetric(vertical: 6.0),
+        padding: const EdgeInsets.symmetric(vertical: 6.0),
         children: _todos.map((Todo todo) {
           return TodoItem(
             todo: todo,
@@ -70,8 +90,19 @@ class _TodoListState extends State<TodoList> {
           onPressed: () => _displayDialog(),
           tooltip: 'Lägg till föremål',
           backgroundColor: Colors.orange,
-          child: Icon(Icons.add)),
+          child: const Icon(Icons.add)),
     );
+  }
+
+  List<Todo>? _filterList(List<Todo> list, filterBy) {
+    if (filterBy == 'alla') return list;
+    if (filterBy == 'klar') {
+      return list.where((_todos) => _todos.checked == true).toList();
+    }
+    if (filterBy == 'inte') {
+      return list.where((_todos) => _todos.checked == false).toList();
+    }
+    return list;
   }
 
   void _handleTodoChange(Todo todo) {
@@ -128,7 +159,7 @@ class _TodoListState extends State<TodoList> {
 class TodoApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       title: 'TIG169 TODO:',
       home: TodoList(),
     );
