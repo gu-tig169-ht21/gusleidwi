@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:my_first_app/todo.dart';
 
-class TodoProvider extends ChangeNotifier {
+class TodosProvider extends ChangeNotifier {
   final List<Todos> _name = [];
   String _filterBy = 'all';
   List<Todos> get getName {

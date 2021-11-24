@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:my_first_app/todo_provider.dart';
+import 'package:my_first_app/todos_provider.dart';
 
 void main() => runApp(TodoApp());
 
@@ -8,40 +8,6 @@ class Todo {
   Todo({required this.name, required this.checked});
   final String name;
   bool checked;
-}
-
-class TodoItem extends StatelessWidget {
-  TodoItem({
-    required this.todo,
-    required this.onTodoChanged,
-  }) : super(key: ObjectKey(todo));
-
-  final Todo todo;
-  final onTodoChanged;
-
-  TextStyle? _getTextStyle(bool checked) {
-    if (!checked) return null;
-
-    return const TextStyle(
-      color: Colors.black45,
-      decoration: TextDecoration.lineThrough,
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-        child: CheckboxListTile(
-      title: Text(todo.name, style: _getTextStyle(todo.checked)),
-      value: todo.checked,
-      secondary:
-          IconButton(icon: const Icon(Icons.remove_circle), onPressed: () {}),
-      onChanged: (newValue) {
-        onTodoChanged(todo);
-      },
-      controlAffinity: ListTileControlAffinity.leading,
-    ));
-  }
 }
 
 class TodoList extends StatefulWidget {
@@ -65,7 +31,7 @@ class _TodoListState extends State<TodoList> {
           PopupMenuButton<String>(
             onSelected: (value) {
               setState(() {
-                Provider.of<TodoProvider>(context, listen: false)
+                Provider.of<TodosProvider>(context, listen: false)
                     .setFilterBy(value);
               });
             },
@@ -118,12 +84,6 @@ class _TodoListState extends State<TodoList> {
     _textFieldController.clear();
   }
 
-  void _removeTodoItem(String name) {
-    setState(() {
-      _todos.remove(Todo(name: name, checked: false));
-    });
-  }
-
   Future<void> _displayDialog() async {
     return showDialog<void>(
       context: context,
@@ -153,6 +113,70 @@ class _TodoListState extends State<TodoList> {
         );
       },
     );
+  }
+}
+
+Widget deleteButton(BuildContext context, todo, String name) {
+  return IconButton(
+    icon: const Icon(Icons.delete_outline),
+    tooltip: "Delete",
+    onPressed: () => showDialog<String>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text('Varning'),
+        content: Text("Är du säker på att du vill radera '$name'?"),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.pop(context, 'Cancel'),
+            child: const Text('Avbryt'),
+          ),
+          TextButton(
+            onPressed: () {
+              Provider.of<TodosProvider>(context, listen: false)
+                  .removeTodo(todo);
+              Navigator.pop(context);
+            },
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+class TodoItem extends StatelessWidget {
+  TodoItem({
+    required this.todo,
+    required this.onTodoChanged,
+  }) : super(key: ObjectKey(todo));
+
+  final Todo todo;
+  final onTodoChanged;
+
+  TextStyle? _getTextStyle(bool checked) {
+    if (!checked) return null;
+
+    return const TextStyle(
+      color: Colors.black45,
+      decoration: TextDecoration.lineThrough,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return StatefulBuilder(
+        builder: (BuildContext context, StateSetter setState) {
+      return Card(
+          child: CheckboxListTile(
+        title: Text(todo.name, style: _getTextStyle(todo.checked)),
+        value: todo.checked,
+        secondary: deleteButton(context, todo, todo.name),
+        onChanged: (newValue) {
+          onTodoChanged(todo);
+        },
+        controlAffinity: ListTileControlAffinity.leading,
+      ));
+    });
   }
 }
 
