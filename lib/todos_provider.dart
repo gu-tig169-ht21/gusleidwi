@@ -1,47 +1,57 @@
 import 'package:flutter/cupertino.dart';
-import 'package:my_first_app/todo.dart';
+import 'package:my_first_app/todos.dart';
+import 'package:my_first_app/response_provider.dart';
+import 'dart:convert';
 
 class TodosProvider extends ChangeNotifier {
-  final List<Todos> _name = [];
+  List<Todos> _name = [];
   String _filterBy = 'all';
-  List<Todos> get getName {
-    return _name;
+  final String _key = '661e354a-f26a-4a04-b181-c59b3adb95dc';
+  String get key => _key;
+  List<Todos> get list => _name;
+
+  Future getName() async {
+    List<Todos> list = await ResponseProvider().fetchTodos(key);
+    _name = list;
+    notifyListeners();
   }
 
   String get filterBy => _filterBy;
 
+  void addTodo(String title, bool done) async {
+    Map data = {
+      'title': title,
+      'done': done,
+    };
+    var body = jsonEncode(data);
+    List<Todos> list = await ResponseProvider().addTodo(body, key);
+    _name = list;
+
+    notifyListeners();
+  }
+
+  void updateTodo(Todos todo, bool done) async {
+    Map data = {
+      'id': todo.id,
+      'title': todo.title,
+      'done': done,
+    };
+    var body = jsonEncode(data);
+    List<Todos> list = await ResponseProvider().updateTodo(body, todo.id, key);
+    _name = list;
+
+    notifyListeners();
+  }
+
+  void removeTodo(Todos todo) async {
+    List<Todos> list = await ResponseProvider().removeTodo(todo.id, key);
+    _name = list;
+
+    notifyListeners();
+  }
+
   void setFilterBy(String filterBy) {
     this._filterBy = filterBy;
     notifyListeners();
-  }
-
-  void updateAll(bool check) {
-    for (var a in _name) {
-      a.checked = check;
-    }
-    notifyListeners();
-  }
-
-  void addTodo(String name, bool checked) {
-    Todos todo = Todos(name, checked);
-
-    _name.add(todo);
-
-    notifyListeners();
-  }
-
-  void removeTodo(Todos todo) {
-    _name.remove(todo);
-  }
-
-  bool checkAllMarked() {
-    bool value = false;
-    if (_name.every((element) => element.checked == false)) {
-      value = false;
-    }
-    if (_name.every((element) => element.checked == true)) {
-      value = true;
-    }
-    return value;
   }
 }
