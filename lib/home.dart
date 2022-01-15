@@ -4,8 +4,16 @@ import 'package:provider/provider.dart';
 import 'package:my_first_app/todos_provider.dart';
 import 'package:my_first_app/todos.dart';
 
-class Home extends StatelessWidget {
-  final _controller = TextEditingController();
+import 'add_todos.dart';
+
+class Home extends StatefulWidget {
+  const Home({Key? key}) : super(key: key);
+
+  @override
+  State<Home> createState() => _HomeState();
+}
+
+class _HomeState extends State<Home> {
   bool checkAll = false;
 
   @override
@@ -13,70 +21,47 @@ class Home extends StatelessWidget {
     return StatefulBuilder(
         builder: (BuildContext context, StateSetter setState) {
       return Scaffold(
-          appBar: AppBar(
-            title: const Text('Todo List'),
-            actions: <Widget>[
-              PopupMenuButton<String>(
-                onSelected: (value) async {
-                  setState(() {
-                    Provider.of<TodosProvider>(context, listen: false)
-                        .setFilterBy(value);
-                  });
-                },
-                itemBuilder: (context) => [
-                  const PopupMenuItem(child: Text('Visa alla'), value: 'alla'),
-                  const PopupMenuItem(
-                      child: Text('Visa ej klara'), value: 'inte'),
-                  const PopupMenuItem(child: Text('Visa klara'), value: 'klar')
-                ],
-              )
-            ],
-          ),
-          body: SingleChildScrollView(
-            child: Consumer<TodosProvider>(
-                builder: (context, TodosProvider data, child) {
-              return ListView(
-                  scrollDirection: Axis.vertical,
-                  shrinkWrap: true,
-                  children: _filterList(data.list, data.filterBy)!
-                      .map((card) => ListTodo(context, card))
-                      .toList());
-            }),
-          ),
-          floatingActionButton: FloatingActionButton(
-            onPressed: () {
-              _controller.clear();
-              showModalBottomSheet(
-                  context: context,
-                  builder: (context) {
-                    return Wrap(
-                      children: <Widget>[
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(8, 5, 8, 300),
-                          child: TextFormField(
-                            onFieldSubmitted: (value) async {
-                              Provider.of<TodosProvider>(context, listen: false)
-                                  .addTodo(_controller.text, false);
-                              Navigator.pop(context);
-                            },
-                            decoration: InputDecoration(
-                              suffix: IconButton(
-                                onPressed: _controller.clear,
-                                icon: const Icon(Icons.clear),
-                              ),
-                              border: const UnderlineInputBorder(),
-                              hintText: 'Lägg till aktivitet',
-                            ),
-                            controller: _controller,
-                          ),
-                        ),
-                      ],
-                    );
-                  });
-            },
-            tooltip: "Lägg till",
-            child: const Icon(Icons.add),
-          ));
+        appBar: AppBar(
+          title: const Text('Todo List'),
+          actions: <Widget>[
+            PopupMenuButton<String>(
+              onSelected: (value) async {
+                setState(() {
+                  Provider.of<TodosProvider>(context, listen: false)
+                      .setFilterBy(value);
+                });
+              },
+              itemBuilder: (context) => [
+                const PopupMenuItem(child: Text('Visa alla'), value: 'alla'),
+                const PopupMenuItem(
+                    child: Text('Visa ej klara'), value: 'inte'),
+                const PopupMenuItem(child: Text('Visa klara'), value: 'klar')
+              ],
+            )
+          ],
+        ),
+        body: Consumer<TodosProvider>(
+          builder: (context, TodosProvider data, child) {
+            return ListView(
+                scrollDirection: Axis.vertical,
+                shrinkWrap: true,
+                children: _filterList(data.list, data.filterBy)!
+                    .map((card) => ListTodo(context, card))
+                    .toList());
+          },
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AddTodo(),
+                ));
+          },
+          tooltip: "Lägg till",
+          child: const Icon(Icons.add),
+        ),
+      );
     });
   }
 }
@@ -109,33 +94,41 @@ Widget deleteButton(BuildContext context, todo, String name) {
   );
 }
 
-class ListTodo extends StatelessWidget {
+class ListTodo extends StatefulWidget {
   final Todos todo;
   BuildContext context;
-  ListTodo(this.context, this.todo);
+  ListTodo(this.context, this.todo, {Key? key}) : super(key: key);
+
+  @override
+  State<ListTodo> createState() => _ListTodoState();
+}
+
+class _ListTodoState extends State<ListTodo> {
   @override
   Widget build(BuildContext context) {
     return StatefulBuilder(
         builder: (BuildContext context, StateSetter setState) {
       return Padding(
-          padding: const EdgeInsets.all(2),
-          child: CheckboxListTile(
-              value: todo.done,
-              title: Text(
-                todo.title,
-                style: (TextStyle(
-                  decoration: todo.done ? TextDecoration.lineThrough : null,
-                  color: todo.done ? Colors.black45 : null,
-                  decorationThickness: 1.5,
-                )),
-              ),
-              secondary: deleteButton(context, todo, todo.title),
-              controlAffinity: ListTileControlAffinity.leading,
-              activeColor: Colors.orange,
-              onChanged: (newvalue) async {
-                Provider.of<TodosProvider>(context, listen: false)
-                    .updateTodo(todo, newvalue!);
-              }));
+        padding: const EdgeInsets.all(2),
+        child: CheckboxListTile(
+            value: widget.todo.done,
+            title: Text(
+              widget.todo.title,
+              style: (TextStyle(
+                decoration:
+                    widget.todo.done ? TextDecoration.lineThrough : null,
+                color: widget.todo.done ? Colors.black45 : null,
+                decorationThickness: 1.5,
+              )),
+            ),
+            secondary: deleteButton(context, widget.todo, widget.todo.title),
+            controlAffinity: ListTileControlAffinity.leading,
+            activeColor: Colors.orange,
+            onChanged: (newvalue) async {
+              Provider.of<TodosProvider>(context, listen: false)
+                  .updateTodo(widget.todo, newvalue!);
+            }),
+      );
     });
   }
 }

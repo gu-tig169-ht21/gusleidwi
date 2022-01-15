@@ -15,14 +15,16 @@ class MyApp extends StatelessWidget {
     var ip = TodosProvider();
     ip.getName();
     return ChangeNotifierProvider(
-        create: (context) => ip,
-        child: MaterialApp(
-            title: 'Todo List',
-            debugShowCheckedModeBanner: false,
-            theme: ThemeData(
-              primarySwatch: Colors.orange,
-              visualDensity: VisualDensity.adaptivePlatformDensity,
-            ),
-            home: Home()));
+      create: (context) => ip,
+      child: MaterialApp(
+        title: 'Todo List',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          primarySwatch: Colors.orange,
+          visualDensity: VisualDensity.adaptivePlatformDensity,
+        ),
+        home: Home(),
+      ),
+    );
   }
 }

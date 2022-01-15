@@ -51,7 +51,7 @@ class TodosProvider extends ChangeNotifier {
   }
 
   void setFilterBy(String filterBy) {
-    this._filterBy = filterBy;
+    _filterBy = filterBy;
     notifyListeners();
   }
 }
